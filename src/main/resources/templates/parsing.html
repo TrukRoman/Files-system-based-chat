@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/index.css}">
+
+    <title>File System Based Chat</title>
+</head>
+<body>
+<div class="wrapper">
+    <h1>File System Based Chat</h1>
+
+    <div class="topnav">
+        <a class="active" href="/">Home</a>
+        <a href="/registration">Registration</a>
+        <a href="/chat">Chat</a>
+        <a href="/parsing">Parsing</a>
+    </div>
+    <hr>
+    <h2>Input a name for parsing to json</h2>
+    <form action="/parsing" method="post">
+        <table style="with: 50%">
+            <tr>
+                <td>Sender</td>
+                <td><input type="text" name="sender"/></td>
+            </tr>
+            <td>Recipient</td>
+            <td><input type="text" name="recipient"/></td>
+            </tr>
+            <tr>
+        </table>
+        <input type="submit" value="Parsing"/>
+    </form>
+</div>
+</body>
+</html>

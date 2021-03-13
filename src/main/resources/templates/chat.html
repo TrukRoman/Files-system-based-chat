@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>Chat</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/index.css}">
+
+    <h1>File System Based Chat</h1>
+
+    <div class="topnav">
+        <a class="active" href="/">Home</a>
+        <a href="/registration">Registration</a>
+        <a href="/chat">Chat</a>
+        <a href="/parsing">Parsing</a>
+    </div>
+
+</head>
+<body>
+
+<hr>
+
+<h2> <b th:inline="text" class="user"> [[${#httpServletRequest.remoteUser}]] </b> input id and star to chat</h2>
+
+<div id="username-page">
+    <div class="username-page-container">
+        <form id="usernameForm" name="usernameForm">
+            <div class="form-group">
+                <input type="text" id="name" placeholder="Input ID recipient" autocomplete="off" class="form-control"/>
+            </div>
+            <br>
+            <div class="form-group">
+                <button type="submit" class="accent username-submit">Start chat</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="chat-page" class="hidden">
+    <div class="chat-container">
+        <div class="chat-header">
+        </div>
+
+        <form id="messageForm" name="messageForm" nameForm="messageForm">
+            <div class="form-group">
+                <div class="input-group clearfix">
+                    <input type="text" id="message" placeholder="Input a message" autocomplete="off"
+                           class="form-control"/>
+                    <button type="submit" class="primary">Send</button>
+                </div>
+            </div>
+        </form>
+
+        <br>
+
+        <form class="form-signin" method="get" action="/back">
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Choose another addressee</button>
+        </form>
+
+        <ul id="messageArea"></ul>
+
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

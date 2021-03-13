@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/index.css}">
+
+    <title>File System Based Chat</title>
+</head>
+<body>
+<div class="wrapper">
+    <h1>File System Based Chat</h1>
+
+    <div class="topnav">
+        <a class="active" href="/">Home</a>
+        <a href="/registration">Registration</a>
+        <a href="/chat">Chat</a>
+        <a href="/parsing">Parsing</a>
+    </div>
+    <hr>
+    <h2>Input name and password</h2>
+
+    <p th:if="${param.error}" class="error">
+        Bad Credentials
+    </p>
+    <form th:action="@{/app-login}" method="POST">
+        <table style="with: 50%">
+            <tr>
+                <td>Username</td>
+                <td><input type="text" name="username"/></td>
+            </tr>
+            <td>Password</td>
+            <td><input type="password" name="password"/></td>
+            </tr>
+            <tr>
+        </table>
+
+        <input type="submit" value="Login"/>
+    </form>
+</div>
+</body>
+</html>
