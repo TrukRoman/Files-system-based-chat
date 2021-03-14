@@ -6,6 +6,10 @@ import by.model.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Service
 public class MessageServiceImpl implements MessageService {
@@ -26,5 +30,10 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public void delete(String messageName) {
 
+    }
+
+    @Override
+    public List<Message> getMessagesHistory(int senderId, int toUserId) throws IOException {
+        return messageRepository.getMessagesHistory(senderId, toUserId);
     }
 }

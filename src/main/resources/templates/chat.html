@@ -11,6 +11,7 @@
         <a href="/registration">Registration</a>
         <a href="/chat">Chat</a>
         <a href="/parsing">Parsing</a>
+        <a href="/logout">Logout</a>
     </div>
 
 </head>
@@ -20,48 +21,46 @@
 
 <h2> <b th:inline="text" class="user"> [[${#httpServletRequest.remoteUser}]] </b> input id and star to chat</h2>
 
-<div id="username-page">
-    <div class="username-page-container">
-        <form id="usernameForm" name="usernameForm">
-            <div class="form-group">
-                <input type="text" id="name" placeholder="Input ID recipient" autocomplete="off" class="form-control"/>
-            </div>
-            <br>
-            <div class="form-group">
-                <button type="submit" class="accent username-submit">Start chat</button>
-            </div>
+        <form action="/chat" method="post">
+            <table style="with: 50%">
+                <tr>
+                    <td>Recipient ID</td>
+                    <td><input type="text" name="userTo_id"/></td>
+                </tr>
+                <tr>
+                    <td>Text</td>
+                    <td><input type="text" name="text"/></td>
+                </tr>
+            </table>
+            <input type="submit" value="Send"/>
         </form>
+
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>sender</th>
+                <th>recipient</th>
+                <th>text</th>
+                <th>date</th>
+                <th>edit</th>
+                <th>delete</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="message: ${listHistory}">
+                <td th:text="${message.senderId}"></td>
+                <td th:text="${message.toUser}"></td>
+                <td th:text="${message.content}"></td>
+                <td th:text="${message.date}"></td>
+                <td>                           </td>
+                <td>                           </td>
+            </tr>
+            </c:forEach>
+            </tbody>
+        </table>
+
     </div>
 </div>
 
-<div id="chat-page" class="hidden">
-    <div class="chat-container">
-        <div class="chat-header">
-        </div>
-
-        <form id="messageForm" name="messageForm" nameForm="messageForm">
-            <div class="form-group">
-                <div class="input-group clearfix">
-                    <input type="text" id="message" placeholder="Input a message" autocomplete="off"
-                           class="form-control"/>
-                    <button type="submit" class="primary">Send</button>
-                </div>
-            </div>
-        </form>
-
-        <br>
-
-        <form class="form-signin" method="get" action="/back">
-            <button class="btn btn-lg btn-primary btn-block" type="submit">Choose another addressee</button>
-        </form>
-
-        <ul id="messageArea"></ul>
-
-    </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-<script src="/js/main.js"></script>
 </body>
 </html>

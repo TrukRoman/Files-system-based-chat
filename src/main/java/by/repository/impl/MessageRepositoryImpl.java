@@ -1,19 +1,16 @@
 package by.repository.impl;
 
+import by.model.User;
 import by.repository.MessageRepository;
 import by.model.Message;
 import by.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -42,9 +39,7 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     @Override
     public void edit(Message message) {
-        File findFile = new File(MESSAGES_FOLDER);
-        Set<String> files = loadToSetNamesFiles(findFile);
-        addToCreatedFile(files, message);
+
     }
 
     @Override
@@ -91,5 +86,55 @@ public class MessageRepositoryImpl implements MessageRepository {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public List<Message> getMessagesHistory(int senderId, int toUserId) throws IOException {
+        List<Message> messageList = new ArrayList<>();
+
+        User sender = userRepository.findById(senderId);
+        User recipient = userRepository.findById(toUserId);
+
+        File folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + sender.getLogin() + "_" + recipient.getLogin());
+
+        if (!folder.exists()) {
+            folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + recipient.getLogin() + "_" + sender.getLogin());
+        }
+
+        File[] listOfFiles = folder.listFiles();
+
+        for (File file : listOfFiles) {
+            if (file.isFile()) {
+                int idSender = userRepository.findByLogin(file.getName().substring(0, 3)).getId();
+
+                int idTo;
+
+                if (file.getName().substring(0, 3).equals(folder.getName().substring(0, 3))) {
+                    idTo = userRepository.findByLogin(folder.getName().substring(4, 7)).getId();
+                } else {
+                    idTo = userRepository.findByLogin(folder.getName().substring(0, 3)).getId();
+                }
+
+                String text = readFile(file);
+                String date = file.getName().substring(4, 23);
+
+                messageList.add(new Message(idSender, idTo, text, date));
+            }
+        }
+
+        return messageList;
+    }
+
+    private static String readFile(File file) {
+        StringBuilder resultStringBuilder = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                resultStringBuilder.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return resultStringBuilder.toString();
     }
 }

@@ -35,6 +35,11 @@ public class ParserToJSON {
         User recipientUser = userRepository.findByLogin(recipient);
 
         File folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + sender + "_" + recipient);
+
+        if (!folder.exists()) {
+            folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + recipient + "_" + sender);
+        }
+
         File[] listOfFiles = folder.listFiles();
 
         StringBuilder stringBuilder = new StringBuilder();

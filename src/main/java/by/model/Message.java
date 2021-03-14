@@ -4,10 +4,26 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Message {
-    private String content;
-    private int toUser;
     private int senderId;
-    private String date;
+    private int toUser;
+    private String content;
+    private String date = new SimpleDateFormat("yyyy.MM.dd-hh.mm.ss").format(new Date());
+
+    public Message() {
+    }
+
+    public Message(int senderId, int toUser, String content) {
+        this.content = content;
+        this.toUser = toUser;
+        this.senderId = senderId;
+        this.date = getDate();
+    }
+    public Message(int senderId, int toUser, String content, String date) {
+        this.content = content;
+        this.toUser = toUser;
+        this.senderId = senderId;
+        this.date = date;
+    }
 
     public String getContent() {
         return content;
@@ -34,7 +50,7 @@ public class Message {
     }
 
     public String getDate() {
-        return new SimpleDateFormat("yyyy.MM.dd-hh.mm.ss").format(new Date());
+        return date;
     }
 
     public void setDate(String date) {

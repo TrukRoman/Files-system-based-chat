@@ -14,6 +14,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .csrf().disable()
                 .httpBasic()
 
                 .and().formLogin()
@@ -31,7 +32,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) {
-        web.ignoring().antMatchers("/registration", "/parsing", "/css/**", "/js/**");
+        web.ignoring().antMatchers("/registration", "/parsing", "/css/**");
     }
 
     @Bean
