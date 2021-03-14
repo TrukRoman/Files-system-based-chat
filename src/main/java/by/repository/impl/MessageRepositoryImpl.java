@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,8 +44,23 @@ public class MessageRepositoryImpl implements MessageRepository {
     }
 
     @Override
-    public void delete(String messageName) {
+    public void delete(Message message) throws IOException {
+        User sender = userRepository.findById(message.getSenderId());
+        User recipient = userRepository.findById(message.getToUser());
 
+        File folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + sender.getLogin() + "_" + recipient.getLogin());
+
+        if (!folder.exists()) {
+            folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + recipient.getLogin() + "_" + sender.getLogin());
+        }
+
+        File[] listOfFiles = folder.listFiles();
+
+        for (File file : listOfFiles) {
+            if (message.getDate().equals(file.getName().substring(sender.getLogin().length() + 1, sender.getLogin().length() + 20))) {
+                Files.delete(Path.of(file.getAbsolutePath()));
+            }
+        }
     }
 
     private Set<String> loadToSetNamesFiles(File findFile) {
@@ -105,20 +121,22 @@ public class MessageRepositoryImpl implements MessageRepository {
 
         for (File file : listOfFiles) {
             if (file.isFile()) {
-                int idSender = userRepository.findByLogin(file.getName().substring(0, 3)).getId();
+                int idSender = userRepository.findByLogin(file.getName().substring(0, sender.getLogin().length())).getId();
 
-                int idTo;
+                int recipientId;
+                int senderNameLength = sender.getLogin().length();
+                int recipientNameLength = recipient.getLogin().length();
 
-                if (file.getName().substring(0, 3).equals(folder.getName().substring(0, 3))) {
-                    idTo = userRepository.findByLogin(folder.getName().substring(4, 7)).getId();
+                if (file.getName().substring(0, sender.getLogin().length()).equals(folder.getName().substring(0, senderNameLength))) {
+                    recipientId = userRepository.findByLogin(folder.getName().substring(senderNameLength + 1, recipientNameLength + senderNameLength + 1)).getId();
                 } else {
-                    idTo = userRepository.findByLogin(folder.getName().substring(0, 3)).getId();
+                    recipientId = userRepository.findByLogin(folder.getName().substring(0, senderNameLength)).getId();
                 }
 
                 String text = readFile(file);
-                String date = file.getName().substring(4, 23);
+                String date = file.getName().substring(senderNameLength + 1, senderNameLength + 20);
 
-                messageList.add(new Message(idSender, idTo, text, date));
+                messageList.add(new Message(idSender, recipientId, text, date));
             }
         }
 

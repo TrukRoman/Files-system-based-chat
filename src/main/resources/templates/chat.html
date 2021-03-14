@@ -19,47 +19,61 @@
 
 <hr>
 
-<h2> <b th:inline="text" class="user"> [[${#httpServletRequest.remoteUser}]] </b> input id and star to chat</h2>
+<h2><b th:inline="text" class="user"> [[${#httpServletRequest.remoteUser}]] </b> input id and star to chat</h2>
 
-        <form action="/chat" method="post">
-            <table style="with: 50%">
-                <tr>
-                    <td>Recipient ID</td>
-                    <td><input type="text" name="userTo_id"/></td>
-                </tr>
-                <tr>
-                    <td>Text</td>
-                    <td><input type="text" name="text"/></td>
-                </tr>
-            </table>
-            <input type="submit" value="Send"/>
-        </form>
+<form action="/chat" method="post">
+    <table style="with: 50%">
+        <tr>
+            <td>Recipient ID</td>
+            <td><input type="text" name="userTo_id"/></td>
+        </tr>
+        <tr>
+            <td>Text</td>
+            <td><input type="text" name="text"/></td>
+        </tr>
+    </table>
+    <input type="submit" value="Send"/>
+</form>
 
-        <table class="table table-bordered">
-            <thead>
-            <tr>
-                <th>sender</th>
-                <th>recipient</th>
-                <th>text</th>
-                <th>date</th>
-                <th>edit</th>
-                <th>delete</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="message: ${listHistory}">
-                <td th:text="${message.senderId}"></td>
-                <td th:text="${message.toUser}"></td>
-                <td th:text="${message.content}"></td>
-                <td th:text="${message.date}"></td>
-                <td>                           </td>
-                <td>                           </td>
-            </tr>
-            </c:forEach>
-            </tbody>
-        </table>
+<table class="table table-bordered" border="1">
+    <thead>
+    <tr>
+        <th>sender</th>
+        <th>recipient</th>
+        <th>text</th>
+        <th>date</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="message: ${listHistory}">
+        <td th:text="${message.senderId}"></td>
+        <td th:text="${message.toUser}"></td>
+        <td th:text="${message.content}"></td>
+        <td th:text="${message.date}"></td>
+        <td>
+            <form th:action="@{/edit}" th:object="${message}" method="post">
+                <input type="hidden" name="senderId" th:value="${message.senderId}">
+                <input type="hidden" name="toUser" th:value="${message.toUser}">
+                <input type="hidden" name="content" th:value="${message.content}">
+                <input type="hidden" name="date" th:value="${message.date}">
+                <button type="submit">Edit</button>
+            </form>
+        </td>
+        <td>
+            <form th:action="@{/delete}" th:object="${message}" method="post">
+                <input type="hidden" name="senderId" th:value="${message.senderId}">
+                <input type="hidden" name="toUser" th:value="${message.toUser}">
+                <input type="hidden" name="content" th:value="${message.content}">
+                <input type="hidden" name="date" th:value="${message.date}">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    </c:forEach>
+    </tbody>
+</table>
 
-    </div>
+</div>
 </div>
 
 </body>

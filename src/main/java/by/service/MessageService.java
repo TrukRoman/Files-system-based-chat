@@ -10,7 +10,7 @@ public interface MessageService {
 
     void edit(Message message);
 
-    void delete(String messageName);
+    void delete(Message message) throws IOException;
 
     List<Message> getMessagesHistory(int senderId, int toUserId) throws IOException;
 }

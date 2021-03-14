@@ -28,8 +28,8 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public void delete(String messageName) {
-
+    public void delete(Message message) throws IOException {
+        messageRepository.delete(message);
     }
 
     @Override

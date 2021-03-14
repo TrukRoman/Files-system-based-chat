@@ -10,7 +10,6 @@ import java.io.*;
 @Service
 public class ParserToJSON {
     public static final String JSON_FOLDER = "storage/json";
-    public static final String USERS_FOLDER = "storage/users";
     public static final String MESSAGES_FOLDER = "storage/messages";
     public static final String FILE_SEPARATOR = File.separator;
 
@@ -62,11 +61,11 @@ public class ParserToJSON {
 
         for (File file : listOfFiles) {
             if (file.isFile()) {
+                int senderNameLength = senderUser.getLogin().length();
+
                 stringBuilder.append("  { \n");
-
-                stringBuilder.append("     \"data\":" + " " + "\"" + file.getName().substring(4, 23) + "\", \n");
+                stringBuilder.append("     \"data\":" + " " + "\"" + file.getName().substring(senderNameLength + 1, senderNameLength + 20) + "\", \n");
                 stringBuilder.append("     \"text\":" + " " + "\"" + readFile(file) + "\" \n");
-
                 stringBuilder.append("  }, \n");
             }
         }

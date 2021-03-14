@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -33,6 +34,13 @@ public class ChatController {
 
         List<Message> listHistory = messageService.getMessagesHistory(sender.getId(), userTo_id);
         model.addAttribute("listHistory", listHistory);
+        return "chat";
+    }
+
+    @PostMapping(value = "/delete")
+    public String delete(@ModelAttribute("message") Message message) throws IOException {
+        messageService.delete(message);
+
         return "chat";
     }
 }
