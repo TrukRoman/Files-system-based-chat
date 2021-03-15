@@ -45,13 +45,13 @@ public class MessageRepositoryImpl implements MessageRepository {
                 .filter(s -> Files.isDirectory(Paths.get(s))).collect(Collectors.toSet());
 
         boolean isAdded = false;
+        String senderName = userRepository.findById(message.getSenderId()).getLogin();
+        String recipientName = userRepository.findById(message.getToUser()).getLogin();
 
         if (!files.isEmpty()) {
             for (String fileName : files) {
-                if (fileName.endsWith(userRepository.findById(message.getSenderId()).getLogin().toLowerCase() + "_"
-                        + userRepository.findById(message.getToUser()).getLogin().toLowerCase())
-                        || fileName.endsWith(userRepository.findById(message.getToUser()).getLogin().toLowerCase() + "_"
-                        + userRepository.findById(message.getSenderId()).getLogin().toLowerCase())) {
+                if (fileName.endsWith(senderName.toLowerCase() + "_" + recipientName.toLowerCase())
+                        || fileName.endsWith(recipientName.toLowerCase() + "_" + senderName.toLowerCase())) {
                     writeToFileMessage(fileName, message);
                     isAdded = true;
                 }
@@ -59,8 +59,8 @@ public class MessageRepositoryImpl implements MessageRepository {
         }
 
         if (!isAdded) {
-            folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + userRepository.findById(message.getSenderId()).getLogin().toLowerCase()
-                    + "_" + userRepository.findById(message.getToUser()).getLogin().toLowerCase());
+            folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + senderName.toLowerCase()
+                    + "_" + recipientName.toLowerCase());
             folder.mkdir();
             writeToFileMessage(folder.getAbsolutePath(), message);
         }
