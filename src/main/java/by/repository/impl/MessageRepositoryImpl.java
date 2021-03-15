@@ -39,11 +39,12 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     @Override
     public void save(Message message) {
-        File folder = new File(MESSAGES_FOLDER);
-
-        Set<String> files = Arrays.stream(Objects.requireNonNull(folder.list()))
+        File findFile = new File(MESSAGES_FOLDER);
+        Set<String> files = Arrays.stream(Objects.requireNonNull(findFile.list()))
                 .map(file -> MESSAGES_FOLDER + FILE_SEPARATOR + file)
                 .filter(s -> Files.isDirectory(Paths.get(s))).collect(Collectors.toSet());
+
+        boolean isAdded = false;
 
         if (!files.isEmpty()) {
             for (String fileName : files) {
@@ -52,9 +53,12 @@ public class MessageRepositoryImpl implements MessageRepository {
                         || fileName.endsWith(userRepository.findById(message.getToUser()).getLogin().toLowerCase() + "_"
                         + userRepository.findById(message.getSenderId()).getLogin().toLowerCase())) {
                     writeToFileMessage(fileName, message);
+                    isAdded = true;
                 }
             }
-        } else {
+        }
+
+        if (!isAdded) {
             folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + userRepository.findById(message.getSenderId()).getLogin().toLowerCase()
                     + "_" + userRepository.findById(message.getToUser()).getLogin().toLowerCase());
             folder.mkdir();
