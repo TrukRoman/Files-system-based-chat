@@ -68,7 +68,7 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     @Override
     public void edit(Message message) {
-
+        save(message);
     }
 
     @Override

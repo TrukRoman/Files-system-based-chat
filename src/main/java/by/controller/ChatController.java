@@ -25,7 +25,7 @@ public class ChatController {
     }
 
     @PostMapping(value = "/chat")
-    public String getUserByID(Authentication authentication, @RequestParam("userTo_id") int userTo_id,
+    public String writeMessageById(Authentication authentication, @RequestParam("userTo_id") int userTo_id,
                               @RequestParam("text") String text, Model model) throws IOException {
 
         User sender = (User) authentication.getPrincipal();
@@ -34,12 +34,20 @@ public class ChatController {
 
         List<Message> listHistory = messageService.getMessagesHistory(sender.getId(), userTo_id);
         model.addAttribute("listHistory", listHistory);
+
         return "chat";
     }
 
     @PostMapping(value = "/delete")
     public String delete(@ModelAttribute("message") Message message) throws IOException {
         messageService.delete(message);
+
+        return "chat";
+    }
+
+    @PostMapping(value = "/edit")
+    public String edit(@ModelAttribute("message") Message message) {
+        messageService.edit(message);
 
         return "chat";
     }

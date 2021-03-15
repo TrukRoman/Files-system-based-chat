@@ -42,21 +42,21 @@
     <tr>
         <th>sender</th>
         <th>recipient</th>
-        <th>text</th>
         <th>date</th>
+        <th>text</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="message: ${listHistory}">
         <td th:text="${message.senderId}"></td>
         <td th:text="${message.toUser}"></td>
-        <td th:text="${message.content}"></td>
+<!--        <td th:text="${message.content}"></td>-->
         <td th:text="${message.date}"></td>
         <td>
             <form th:action="@{/edit}" th:object="${message}" method="post">
                 <input type="hidden" name="senderId" th:value="${message.senderId}">
                 <input type="hidden" name="toUser" th:value="${message.toUser}">
-                <input type="hidden" name="content" th:value="${message.content}">
+                <input type="text" name="content" th:value="${message.content}">
                 <input type="hidden" name="date" th:value="${message.date}">
                 <button type="submit">Edit</button>
             </form>
