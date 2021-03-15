@@ -4,6 +4,7 @@ import by.model.User;
 import by.repository.MessageRepository;
 import by.model.Message;
 import by.repository.UserRepository;
+import by.service.TxtFileReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -29,12 +30,35 @@ public class MessageRepositoryImpl implements MessageRepository {
         this.userRepository = userRepository;
     }
 
+    private TxtFileReader txtFileReader;
+
+    @Autowired
+    public void setTxtFileReader(TxtFileReader txtFileReader) {
+        this.txtFileReader = txtFileReader;
+    }
+
     @Override
     public void save(Message message) {
-        File findFile = new File(MESSAGES_FOLDER);
-        Set<String> files = loadToSetNamesFiles(findFile);
-        if (addToCreatedFile(files, message)) {
-            createAndAddToFile(message);
+        File folder = new File(MESSAGES_FOLDER);
+
+        Set<String> files = Arrays.stream(Objects.requireNonNull(folder.list()))
+                .map(file -> MESSAGES_FOLDER + FILE_SEPARATOR + file)
+                .filter(s -> Files.isDirectory(Paths.get(s))).collect(Collectors.toSet());
+
+        if (!files.isEmpty()) {
+            for (String fileName : files) {
+                if (fileName.endsWith(userRepository.findById(message.getSenderId()).getLogin().toLowerCase() + "_"
+                        + userRepository.findById(message.getToUser()).getLogin().toLowerCase())
+                        || fileName.endsWith(userRepository.findById(message.getToUser()).getLogin().toLowerCase() + "_"
+                        + userRepository.findById(message.getSenderId()).getLogin().toLowerCase())) {
+                    writeToFileMessage(fileName, message);
+                }
+            }
+        } else {
+            folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + userRepository.findById(message.getSenderId()).getLogin().toLowerCase()
+                    + "_" + userRepository.findById(message.getToUser()).getLogin().toLowerCase());
+            folder.mkdir();
+            writeToFileMessage(folder.getAbsolutePath(), message);
         }
     }
 
@@ -59,38 +83,10 @@ public class MessageRepositoryImpl implements MessageRepository {
         for (File file : listOfFiles) {
             if (message.getDate().equals(file.getName().substring(sender.getLogin().length() + 1, sender.getLogin().length() + 20))) {
                 Files.delete(Path.of(file.getAbsolutePath()));
+            } else if (message.getDate().equals(file.getName().substring(recipient.getLogin().length() + 1, recipient.getLogin().length() + 20))) {
+                Files.delete(Path.of(file.getAbsolutePath()));
             }
         }
-    }
-
-    private Set<String> loadToSetNamesFiles(File findFile) {
-        return Arrays.stream(Objects.requireNonNull(findFile.list()))
-                .map(file -> MESSAGES_FOLDER + FILE_SEPARATOR + file)
-                .filter(s -> Files.isDirectory(Paths.get(s))).collect(Collectors.toSet());
-
-    }
-
-    private boolean addToCreatedFile(Set<String> files, Message message) {
-        if (!files.isEmpty()) {
-            for (String fileName : files) {
-                if (fileName.endsWith(userRepository.findById(message.getSenderId()).getLogin().toLowerCase() + "_"
-                        + userRepository.findById(message.getToUser()).getLogin().toLowerCase())
-                        || fileName.endsWith(userRepository.findById(message.getToUser()).getLogin().toLowerCase() + "_"
-                        + userRepository.findById(message.getSenderId()).getLogin().toLowerCase())) {
-                    writeToFileMessage(fileName, message);
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private void createAndAddToFile(Message message) {
-        folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + userRepository.findById(message.getSenderId()).getLogin().toLowerCase()
-                + "_" + userRepository.findById(message.getToUser()).getLogin().toLowerCase());
-        folder.mkdir();
-        writeToFileMessage(folder.getAbsolutePath(), message);
     }
 
     private void writeToFileMessage(String directory, Message message) {
@@ -105,7 +101,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     }
 
     @Override
-    public List<Message> getMessagesHistory(int senderId, int toUserId) throws IOException {
+    public List<Message> getMessagesHistory(int senderId, int toUserId) {
         List<Message> messageList = new ArrayList<>();
 
         User sender = userRepository.findById(senderId);
@@ -121,38 +117,26 @@ public class MessageRepositoryImpl implements MessageRepository {
 
         for (File file : listOfFiles) {
             if (file.isFile()) {
-                int idSender = userRepository.findByLogin(file.getName().substring(0, sender.getLogin().length())).getId();
+                int recipientId = 0;
+                int sendId = 0;
 
-                int recipientId;
-                int senderNameLength = sender.getLogin().length();
-                int recipientNameLength = recipient.getLogin().length();
-
-                if (file.getName().substring(0, sender.getLogin().length()).equals(folder.getName().substring(0, senderNameLength))) {
-                    recipientId = userRepository.findByLogin(folder.getName().substring(senderNameLength + 1, recipientNameLength + senderNameLength + 1)).getId();
-                } else {
-                    recipientId = userRepository.findByLogin(folder.getName().substring(0, senderNameLength)).getId();
+                if (file.getName().startsWith(sender.getLogin())) {
+                    sendId = sender.getId();
+                    recipientId = recipient.getId();
+                } else if (file.getName().startsWith(recipient.getLogin())) {
+                    sendId = recipient.getId();
+                    recipientId = sender.getId();
                 }
 
-                String text = readFile(file);
-                String date = file.getName().substring(senderNameLength + 1, senderNameLength + 20);
+                int userSendLoginLength = userRepository.findById(sendId).getLogin().length();
 
-                messageList.add(new Message(idSender, recipientId, text, date));
+                String text = txtFileReader.readFile(file);
+                String date = file.getName().substring(userSendLoginLength + 1, userSendLoginLength + 20);
+
+                messageList.add(new Message(sendId, recipientId, text, date));
             }
         }
 
         return messageList;
-    }
-
-    private static String readFile(File file) {
-        StringBuilder resultStringBuilder = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                resultStringBuilder.append(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return resultStringBuilder.toString();
     }
 }

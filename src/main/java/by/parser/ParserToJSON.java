@@ -2,6 +2,7 @@ package by.parser;
 
 import by.repository.UserRepository;
 import by.model.User;
+import by.service.TxtFileReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,20 +14,18 @@ public class ParserToJSON {
     public static final String MESSAGES_FOLDER = "storage/messages";
     public static final String FILE_SEPARATOR = File.separator;
 
-    @Autowired
     private UserRepository userRepository;
 
-    private static String readFile(File file) {
-        StringBuilder resultStringBuilder = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                resultStringBuilder.append(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return resultStringBuilder.toString();
+    @Autowired
+    public void setUserRepository(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    private TxtFileReader txtFileReader;
+
+    @Autowired
+    public void setTxtFileReader(TxtFileReader txtFileReader) {
+        this.txtFileReader = txtFileReader;
     }
 
     public void saveJsonFile(String sender, String recipient) throws IOException {
@@ -45,13 +44,13 @@ public class ParserToJSON {
 
         stringBuilder.append("{ \n");
 
-        stringBuilder.append(" \"sender\": \n");
+        stringBuilder.append(" \"user_1\": \n");
         stringBuilder.append("   { \n");
         stringBuilder.append("    \"id\":" + " " + senderUser.getId() + ", \n");
         stringBuilder.append("    \"login\":" + " \"" + senderUser.getLogin() + "\" \n");
         stringBuilder.append("}, \n \n");
 
-        stringBuilder.append(" \"recipient\": \n");
+        stringBuilder.append(" \"user_2\": \n");
         stringBuilder.append("    { \n");
         stringBuilder.append("    \"id\":" + " " + recipientUser.getId() + ", \n");
         stringBuilder.append("    \"login\":" + " \"" + recipientUser.getLogin() + "\" \n");
@@ -61,11 +60,21 @@ public class ParserToJSON {
 
         for (File file : listOfFiles) {
             if (file.isFile()) {
-                int senderNameLength = senderUser.getLogin().length();
+                int sendId = 0;
+
+                if (file.getName().startsWith(senderUser.getLogin())) {
+                    sendId = senderUser.getId();
+                } else if (file.getName().startsWith(recipientUser.getLogin())) {
+                    sendId = recipientUser.getId();
+                }
+
+                User sendUser = userRepository.findById(sendId);
+                int senderNameLength = sendUser.getLogin().length();
 
                 stringBuilder.append("  { \n");
+                stringBuilder.append("    \"sender\":" + " \"" + sendUser.getLogin() + "\", \n");
                 stringBuilder.append("     \"data\":" + " " + "\"" + file.getName().substring(senderNameLength + 1, senderNameLength + 20) + "\", \n");
-                stringBuilder.append("     \"text\":" + " " + "\"" + readFile(file) + "\" \n");
+                stringBuilder.append("     \"text\":" + " " + "\"" + txtFileReader.readFile(file) + "\" \n");
                 stringBuilder.append("  }, \n");
             }
         }
