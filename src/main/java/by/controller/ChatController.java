@@ -1,9 +1,8 @@
 package by.controller;
 
-import by.parser.ParserMessageHistoryToJSON;
-import by.service.MessageService;
 import by.model.Message;
 import by.model.User;
+import by.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -23,13 +22,6 @@ public class ChatController {
     @Autowired
     public void setMessageService(MessageService messageService) {
         this.messageService = messageService;
-    }
-
-    private ParserMessageHistoryToJSON parserMessageHistoryToJSON;
-
-    @Autowired
-    public void setParserMessageHistoryToJSON(ParserMessageHistoryToJSON parserMessageHistoryToJSON) {
-        this.parserMessageHistoryToJSON = parserMessageHistoryToJSON;
     }
 
     @PostMapping(value = "/chat")

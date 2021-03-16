@@ -2,7 +2,7 @@ package by.controller;
 
 import by.model.Message;
 import by.model.User;
-import by.parser.ParserMessageHistoryToJSON;
+import by.service.ParserToJson;
 import by.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -24,11 +24,11 @@ public class ParsingController {
         this.messageService = messageService;
     }
 
-    private ParserMessageHistoryToJSON parserMessageHistoryToJSON;
+    private ParserToJson parserToJson;
 
     @Autowired
-    public void setParserMessageHistoryToJSON(ParserMessageHistoryToJSON parserMessageHistoryToJSON) {
-        this.parserMessageHistoryToJSON = parserMessageHistoryToJSON;
+    public void setParserMessageHistoryToJSON(ParserToJson parserToJson) {
+        this.parserToJson = parserToJson;
     }
 
     @GetMapping("/parsing")
@@ -41,7 +41,7 @@ public class ParsingController {
         User sender = (User) authentication.getPrincipal();
         List<Message> listHistory = messageService.getMessagesHistory(sender.getId(), userTo_id);
 
-        parserMessageHistoryToJSON.parseListToJSON(listHistory);
+        parserToJson.parsingListToJSON(listHistory);
 
         return "parsing";
     }

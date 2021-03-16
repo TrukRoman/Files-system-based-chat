@@ -1,6 +1,7 @@
-package by.parser;
+package by.service.impl;
 
 import by.model.Message;
+import by.service.ParserToJson;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
@@ -11,11 +12,12 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
-public class ParserMessageHistoryToJSON {
+public class ParserToJSONImpl implements ParserToJson {
     public static final String JSON_FOLDER = "storage/json";
     public static final String FILE_SEPARATOR = File.separator;
 
-    public void parseListToJSON(List<Message> messageList) {
+    @Override
+    public void parsingListToJSON(List<Message> messageList) {
         ObjectMapper objectMapper = new ObjectMapper();
         String json = "";
 
