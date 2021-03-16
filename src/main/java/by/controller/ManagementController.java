@@ -45,9 +45,4 @@ public class ManagementController {
         userService.save(user);
         return "redirect:/";
     }
-
-    @GetMapping("/back")
-    public String back() {
-        return "redirect:/chat";
-    }
 }

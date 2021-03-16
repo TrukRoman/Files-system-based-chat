@@ -4,7 +4,6 @@ import by.model.User;
 import by.repository.MessageRepository;
 import by.model.Message;
 import by.repository.UserRepository;
-import by.service.TxtFileReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -28,13 +27,6 @@ public class MessageRepositoryImpl implements MessageRepository {
     @Autowired
     public void setUserRepository(UserRepository userRepository) {
         this.userRepository = userRepository;
-    }
-
-    private TxtFileReader txtFileReader;
-
-    @Autowired
-    public void setTxtFileReader(TxtFileReader txtFileReader) {
-        this.txtFileReader = txtFileReader;
     }
 
     @Override
@@ -134,7 +126,14 @@ public class MessageRepositoryImpl implements MessageRepository {
 
                 int userSendLoginLength = userRepository.findById(sendId).getLogin().length();
 
-                String text = txtFileReader.readFile(file);
+                String text = "";
+
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    text = reader.readLine();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 String date = file.getName().substring(userSendLoginLength + 1, userSendLoginLength + 20);
 
                 messageList.add(new Message(sendId, recipientId, text, date));

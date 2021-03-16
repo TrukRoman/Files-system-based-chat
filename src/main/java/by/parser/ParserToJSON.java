@@ -2,7 +2,6 @@ package by.parser;
 
 import by.repository.UserRepository;
 import by.model.User;
-import by.service.TxtFileReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,13 +18,6 @@ public class ParserToJSON {
     @Autowired
     public void setUserRepository(UserRepository userRepository) {
         this.userRepository = userRepository;
-    }
-
-    private TxtFileReader txtFileReader;
-
-    @Autowired
-    public void setTxtFileReader(TxtFileReader txtFileReader) {
-        this.txtFileReader = txtFileReader;
     }
 
     public void saveJsonFile(String sender, String recipient) throws IOException {
@@ -70,11 +62,15 @@ public class ParserToJSON {
 
                 User sendUser = userRepository.findById(sendId);
                 int senderNameLength = sendUser.getLogin().length();
+                String text = "";
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    text = reader.readLine();
+                }
 
                 stringBuilder.append("  { \n");
                 stringBuilder.append("    \"sender\":" + " \"" + sendUser.getLogin() + "\", \n");
                 stringBuilder.append("     \"data\":" + " " + "\"" + file.getName().substring(senderNameLength + 1, senderNameLength + 20) + "\", \n");
-                stringBuilder.append("     \"text\":" + " " + "\"" + txtFileReader.readFile(file) + "\" \n");
+                stringBuilder.append("     \"text\":" + " " + "\"" + text + "\" \n");
                 stringBuilder.append("  }, \n");
             }
         }

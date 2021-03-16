@@ -50,7 +50,7 @@
     <tr th:each="message: ${listHistory}">
         <td th:text="${message.senderId}"></td>
         <td th:text="${message.toUser}"></td>
-<!--        <td th:text="${message.content}"></td>-->
+        <!--<td th:text="${message.content}"></td>-->
         <td th:text="${message.date}"></td>
         <td>
             <form th:action="@{/edit}" th:object="${message}" method="post">
@@ -75,7 +75,6 @@
     </tbody>
 </table>
 
-</div>
 </div>
 
 </body>
