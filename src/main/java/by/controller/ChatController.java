@@ -1,5 +1,6 @@
 package by.controller;
 
+import by.parser.ParserMessageHistoryToJSON;
 import by.service.MessageService;
 import by.model.Message;
 import by.model.User;
@@ -24,8 +25,15 @@ public class ChatController {
         this.messageService = messageService;
     }
 
+    private ParserMessageHistoryToJSON parserMessageHistoryToJSON;
+
+    @Autowired
+    public void setParserMessageHistoryToJSON(ParserMessageHistoryToJSON parserMessageHistoryToJSON) {
+        this.parserMessageHistoryToJSON = parserMessageHistoryToJSON;
+    }
+
     @PostMapping(value = "/chat")
-    public String writeMessageById(Authentication authentication, @RequestParam("userTo_id") int userTo_id,
+    public String chatFormProcessing(Authentication authentication, @RequestParam("userTo_id") int userTo_id,
                               @RequestParam("text") String text, Model model) throws IOException {
 
         User sender = (User) authentication.getPrincipal();

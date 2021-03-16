@@ -32,7 +32,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) {
-        web.ignoring().antMatchers("/registration", "/parsing", "/css/**");
+        web.ignoring().antMatchers("/registration", "/css/**");
     }
 
     @Bean
