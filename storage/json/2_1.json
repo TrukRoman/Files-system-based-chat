@@ -1,0 +1,11 @@
+[ {
+  "senderId" : 2,
+  "toUser" : 1,
+  "content" : "message 2",
+  "date" : "2021.03.17-11.02.42"
+}, {
+  "senderId" : 1,
+  "toUser" : 2,
+  "content" : "message 1",
+  "date" : "2021.03.17-11.02.17"
+} ]

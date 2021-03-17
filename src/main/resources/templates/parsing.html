@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" th:href="@{/css/index.css}">
@@ -19,7 +19,7 @@
         <a href="/logout">Logout</a>
     </div>
     <hr>
-    <h2>Input user id for parsing to JSON</h2>
+    <h2>Input user id for parsing messages history to JSON</h2>
     <form action="/parsing" method="post">
         <table style="with: 50%">
             <td>User Id</td>
