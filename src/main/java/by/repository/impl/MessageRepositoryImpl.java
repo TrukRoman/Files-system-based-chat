@@ -140,6 +140,10 @@ public class MessageRepositoryImpl implements MessageRepository {
             }
         }
 
+        messageList = messageList.stream()
+                .sorted(Comparator.comparing(Message::getDate).reversed())
+                .collect(Collectors.toList());
+
         return messageList;
     }
 }

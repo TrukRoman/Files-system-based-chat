@@ -46,29 +46,31 @@
     </tr>
 
     <tr>
-        <td th:text="from + ' ' + ${message.senderId}">...</td>
-        <td>
-            <form th:action="@{/edit}" th:object="${message}" method="post">
-                <input type="hidden" name="senderId" th:value="${message.senderId}">
-                <input type="hidden" name="toUser" th:value="${message.toUser}">
-                <input type="text" name="content" th:value="${message.content}">
-                <input type="hidden" name="date" th:value="${message.date}">
-                <button type="submit">&#9745;</button>
-            </form>
-        </td>
-        <td>
-            <form id="delete-form" th:action="@{/delete}" th:object="${message}" method="post">
-                <input type="hidden" name="senderId" th:value="${message.senderId}">
-                <input type="hidden" name="toUser" th:value="${message.toUser}">
-                <input type="hidden" name="content" th:value="${message.content}">
-                <input type="hidden" name="date" th:value="${message.date}">
-                <button type="submit">&#9746;</button>
-            </form>
-        </td>
-    </tr>
     <tr>
-        <td align="right" colspan="3" rowspan="2" th:text="${message.date}"></td>
+        <td align="left" th:text="${message.senderId} + ':' ">...</td>
     </tr>
+    <td>
+        <form th:action="@{/edit}" th:object="${message}" method="post">
+            <input type="hidden" name="senderId" th:value="${message.senderId}">
+            <input type="hidden" name="toUser" th:value="${message.toUser}">
+            <input class="text-input" type="text" name="content" th:value="${message.content}">
+            <input type="hidden" name="date" th:value="${message.date}">
+            <button type="submit">&#9745;</button>
+        </form>
+    </td>
+    <td>
+        <form id="delete-form" th:action="@{/delete}" th:object="${message}" method="post">
+            <input type="hidden" name="senderId" th:value="${message.senderId}">
+            <input type="hidden" name="toUser" th:value="${message.toUser}">
+            <input type="hidden" name="content" th:value="${message.content}">
+            <input type="hidden" name="date" th:value="${message.date}">
+            <button type="submit">&#9746;</button>
+        </form>
+    </td>
+    </tr>
+        <tr>
+            <td align="right" colspan="3" rowspan="2" class="date-text" th:text="${message.date}"></td>
+        </tr>
 
     <td></td>
 
