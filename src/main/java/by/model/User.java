@@ -6,7 +6,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class User implements UserDetails {
     private int id;
@@ -31,11 +30,9 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>() {{
+        return new ArrayList<SimpleGrantedAuthority>() {{
             add(new SimpleGrantedAuthority(Role.USER.name()));
         }};
-
-        return authorities;
     }
 
     public String getPassword() {

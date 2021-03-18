@@ -16,11 +16,8 @@ import java.util.stream.Collectors;
 
 @Repository
 public class MessageRepositoryImpl implements MessageRepository {
-    public static final String STORAGE = "storage";
     public static final String MESSAGES_FOLDER = "storage/messages";
     public static final String FILE_SEPARATOR = File.separator;
-
-    private File folder = new File(STORAGE);
 
     private UserRepository userRepository;
 
@@ -31,31 +28,54 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     @Override
     public void save(Message message) {
-        File findFile = new File(MESSAGES_FOLDER);
-        Set<String> files = Arrays.stream(Objects.requireNonNull(findFile.list()))
-                .map(file -> MESSAGES_FOLDER + FILE_SEPARATOR + file)
-                .filter(s -> Files.isDirectory(Paths.get(s))).collect(Collectors.toSet());
+        Set<String> files = findCatalogs();
 
-        boolean isAdded = false;
         String senderName = userRepository.findById(message.getSenderId()).getLogin();
         String recipientName = userRepository.findById(message.getToUser()).getLogin();
 
+        String folderName = getMessagesFolder(files, senderName, recipientName);
+
+        writeToFileMessage(folderName, message);
+    }
+
+    private String getMessagesFolder(Set<String> files, String senderName, String recipientName) {
+
+        String folder = getFolderNameIfExist(files, senderName, recipientName);
+
+        if (folder.equals("")) {
+            folder = getNewFolderPath(senderName, recipientName);
+        }
+
+        return folder;
+    }
+
+    private String getFolderNameIfExist(Set<String> files, String senderName, String recipientName) {
         if (!files.isEmpty()) {
-            for (String fileName : files) {
-                if (fileName.endsWith(senderName.toLowerCase() + "_" + recipientName.toLowerCase())
-                        || fileName.endsWith(recipientName.toLowerCase() + "_" + senderName.toLowerCase())) {
-                    writeToFileMessage(fileName, message);
-                    isAdded = true;
+            for (String folderName : files) {
+                if (folderName.endsWith(senderName.toLowerCase() + "_" + recipientName.toLowerCase())
+                        || folderName.endsWith(recipientName.toLowerCase() + "_" + senderName.toLowerCase())) {
+                    return folderName;
                 }
             }
         }
 
-        if (!isAdded) {
-            folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + senderName.toLowerCase()
-                    + "_" + recipientName.toLowerCase());
-            folder.mkdir();
-            writeToFileMessage(folder.getAbsolutePath(), message);
-        }
+        return "";
+    }
+
+    private String getNewFolderPath(String senderName, String recipientName) {
+        File folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + senderName.toLowerCase()
+                + "_" + recipientName.toLowerCase());
+        folder.mkdir();
+
+        return folder.getAbsolutePath();
+    }
+
+    private Set<String> findCatalogs() {
+        File folder = new File(MESSAGES_FOLDER);
+
+        return Arrays.stream(Objects.requireNonNull(folder.list()))
+                .map(file -> MESSAGES_FOLDER + FILE_SEPARATOR + file)
+                .filter(s -> Files.isDirectory(Paths.get(s))).collect(Collectors.toSet());
     }
 
     @Override
@@ -65,30 +85,40 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     @Override
     public void delete(Message message) throws IOException {
+        Set<String> catalogs = findCatalogs();
+
         User sender = userRepository.findById(message.getSenderId());
         User recipient = userRepository.findById(message.getToUser());
 
-        File folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + sender.getLogin() + "_" + recipient.getLogin());
+        File folder = new File(getFolderNameIfExist(catalogs, sender.getLogin(), recipient.getLogin()));
 
-        if (!folder.exists()) {
-            folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + recipient.getLogin() + "_" + sender.getLogin());
-        }
+        Files.delete(Path.of(getMessagePathByDate(folder, message)));
+    }
+
+    private String getMessagePathByDate(File folder, Message message) {
+        String path = "";
 
         File[] listOfFiles = folder.listFiles();
 
+        User sender = userRepository.findById(message.getSenderId());
+        User recipient = userRepository.findById(message.getToUser());
+
+        assert listOfFiles != null;
         for (File file : listOfFiles) {
             if (message.getDate().equals(file.getName().substring(sender.getLogin().length() + 1, sender.getLogin().length() + 20))) {
-                Files.delete(Path.of(file.getAbsolutePath()));
+                path = file.getAbsolutePath();
             } else if (message.getDate().equals(file.getName().substring(recipient.getLogin().length() + 1, recipient.getLogin().length() + 20))) {
-                Files.delete(Path.of(file.getAbsolutePath()));
+                path = file.getAbsolutePath();
             }
         }
+
+        return path;
     }
 
     private void writeToFileMessage(String directory, Message message) {
-        folder = new File(directory + FILE_SEPARATOR + userRepository.findById(message.getSenderId()).getLogin().toLowerCase()
+        File file = new File(directory + FILE_SEPARATOR + userRepository.findById(message.getSenderId()).getLogin().toLowerCase()
                 + "_" + message.getDate() + ".txt");
-        try (FileWriter fileWriter = new FileWriter(folder)) {
+        try (FileWriter fileWriter = new FileWriter(file)) {
             fileWriter.write(message.getContent());
             fileWriter.flush();
         } catch (IOException e) {
@@ -98,19 +128,42 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     @Override
     public List<Message> getMessagesHistory(int senderId, int toUserId) {
-        List<Message> messageList = new ArrayList<>();
+        Set<String> catalogs = findCatalogs();
 
         User sender = userRepository.findById(senderId);
         User recipient = userRepository.findById(toUserId);
 
-        File folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + sender.getLogin() + "_" + recipient.getLogin());
+        File folder = new File(getFolderNameIfExist(catalogs, sender.getLogin(), recipient.getLogin()));
 
-        if (!folder.exists()) {
-            folder = new File(MESSAGES_FOLDER + FILE_SEPARATOR + recipient.getLogin() + "_" + sender.getLogin());
+        List<Message> messageList = getMessagesListFromFolderByUsers(sender, recipient, folder);
+
+        return reverseSortListByDate(messageList);
+    }
+
+    private String readFromFile(File file) {
+        String text = "";
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            text = reader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+        return text;
+    }
+
+    private List<Message> reverseSortListByDate(List<Message> messageList) {
+        return messageList.stream()
+                .sorted(Comparator.comparing(Message::getDate).reversed())
+                .collect(Collectors.toList());
+    }
+
+    private List<Message> getMessagesListFromFolderByUsers(User sender, User recipient, File folder) {
+        List<Message> messageList = new ArrayList<>();
 
         File[] listOfFiles = folder.listFiles();
 
+        assert listOfFiles != null;
         for (File file : listOfFiles) {
             if (file.isFile()) {
                 int recipientId = 0;
@@ -126,23 +179,10 @@ public class MessageRepositoryImpl implements MessageRepository {
 
                 int userSendLoginLength = userRepository.findById(sendId).getLogin().length();
 
-                String text = "";
-
-                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                    text = reader.readLine();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                String date = file.getName().substring(userSendLoginLength + 1, userSendLoginLength + 20);
-
-                messageList.add(new Message(sendId, recipientId, text, date));
+                messageList.add(new Message(sendId, recipientId, readFromFile(file),
+                        file.getName().substring(userSendLoginLength + 1, userSendLoginLength + 20)));
             }
         }
-
-        messageList = messageList.stream()
-                .sorted(Comparator.comparing(Message::getDate).reversed())
-                .collect(Collectors.toList());
 
         return messageList;
     }
