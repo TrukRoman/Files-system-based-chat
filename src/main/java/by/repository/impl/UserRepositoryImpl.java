@@ -9,29 +9,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository {
     public static final String USERS_FOLDER = "storage/users";
     public static final String FILE_SEPARATOR = File.separator;
-    private Map<String, User> map = new HashMap<>();
 
     @Override
     public User findById(int id) {
-        getUsersMap();
+        return getUserFromListById(findAll(), id);
+    }
 
-        AtomicReference<User> user = new AtomicReference<>();
-
-        map.forEach((key, value) -> {
-            if (value.getId() == id) {
-                user.set(value);
-            }
-        });
-
-//        return map.entrySet().stream().filter(v -> v.getValue().getId() == id).findFirst().get().getValue();
-
-        return user.get();
+    private User getUserFromListById(List<User> userList, int id) {
+        return userList.stream()
+                .filter(user -> user.getId() == id)
+                .findFirst()
+                .get();
     }
 
     @Override
@@ -41,11 +34,15 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<User> findAll() {
-        getUsersMap();
+        Map<String, User> userMap = getUsersMap();
 
+        return getAllUsersList(userMap);
+    }
+
+    private List<User> getAllUsersList(Map<String, User> userMap) {
         ArrayList<User> list = new ArrayList<>();
 
-        for (Map.Entry<String, User> pair : map.entrySet()) {
+        for (Map.Entry<String, User> pair : userMap.entrySet()) {
             list.add(pair.getValue());
         }
 
@@ -54,7 +51,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void save(User user) {
-        String dataUser = generatorId() + "-" + user.getLogin() + "-" + user.getPassword();
+        String dataUser = getIdForNewUser() + "-" + user.getLogin() + "-" + user.getPassword();
         File file = new File(USERS_FOLDER + FILE_SEPARATOR + user.getLogin().toLowerCase() + ".txt");
         try (FileWriter fileWriter = new FileWriter(file)) {
             fileWriter.write(dataUser);
@@ -64,7 +61,9 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
-    private void getUsersMap() {
+    private Map<String, User> getUsersMap() {
+        Map<String, User> map = new HashMap<>();
+
         File findFile = new File(USERS_FOLDER);
         String[] files = findFile.list();
 
@@ -73,6 +72,7 @@ public class UserRepositoryImpl implements UserRepository {
                 map.put(file, getUserFromFile(file));
             }
         }
+        return map;
     }
 
     private User getUserFromFile(String fileName) {
@@ -80,17 +80,21 @@ public class UserRepositoryImpl implements UserRepository {
 
         String str = readFromFile(file);
 
-        return getUserByString(str);
+        return getUserFromString(str);
     }
 
-    private int generatorId() {
-        getUsersMap();
+    private int getIdForNewUser() {
+        Map<String, User> userMap = getUsersMap();
 
-        int id = 1;
+        return getLastId(userMap) + 1;
+    }
 
-        for (Map.Entry<String, User> pair : map.entrySet()) {
+    private int getLastId(Map<String, User> userMap) {
+        int id = 0;
+
+        for (Map.Entry<String, User> pair : userMap.entrySet()) {
             if (pair.getValue().getId() >= id) {
-                id = pair.getValue().getId() + 1;
+                id = pair.getValue().getId();
             }
         }
 
@@ -101,7 +105,7 @@ public class UserRepositoryImpl implements UserRepository {
         String str = "";
 
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
-                str = bufferedReader.readLine();
+            str = bufferedReader.readLine();
         } catch (IOException fileNotFoundException) {
             fileNotFoundException.printStackTrace();
         }
@@ -109,7 +113,7 @@ public class UserRepositoryImpl implements UserRepository {
         return str;
     }
 
-    private User getUserByString(String str) {
+    private User getUserFromString(String str) {
         User user = new User();
 
         StringBuilder user_id = new StringBuilder();
