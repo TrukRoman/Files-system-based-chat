@@ -18,6 +18,13 @@ public class ParserToJSONImpl implements ParserToJson {
 
     @Override
     public void parsingListToJSON(List<Message> messageList) {
+
+        String json = createJSONFromMessagesList(messageList);
+
+        writeJSONFileInFolder(messageList, json);
+    }
+
+    private String createJSONFromMessagesList(List<Message> messageList) {
         ObjectMapper objectMapper = new ObjectMapper();
         String json = "";
 
@@ -27,9 +34,10 @@ public class ParserToJSONImpl implements ParserToJson {
             e.printStackTrace();
         }
 
-        File catalog = new File(JSON_FOLDER);
-        catalog.mkdir();
+        return json;
+    }
 
+    private void writeJSONFileInFolder(List<Message> messageList, String json) {
         File file = new File(JSON_FOLDER + FILE_SEPARATOR + messageList.get(0).getSenderId() + "_"
                 + messageList.get(0).getToUser() + ".json");
         try (FileWriter fileWriter = new FileWriter(file)) {
